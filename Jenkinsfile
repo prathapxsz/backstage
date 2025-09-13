@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_CREDENTIALS = 'docker'  
+        DOCKERHUB_REPO = 'prathapxsz/turium'
+        IMAGE_TAG = 'backstage'  // Use DinD sidecar
+    }
+
+    stages {
+
+        stage('Check Workspace') {
+            steps {
+                sh 'pwd'
+                sh 'ls -lah'
+            }
+        }
+        stage('Check Versions') {
+            steps {
+                sh 'docker build -t prathapxsz/turium:backstage .'
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', env.DOCKERHUB_CREDENTIALS) {
+                        echo "Logged in to Docker Hub"
+                        // sh "docker tag n8nio/n8n:n8n ${DOCKERHUB_REPO}:${IMAGE_TAG}"
+                        sh "docker push ${DOCKERHUB_REPO}:${IMAGE_TAG}"
+                    }
+                }
+            }
+        }
+
+    }
+}
